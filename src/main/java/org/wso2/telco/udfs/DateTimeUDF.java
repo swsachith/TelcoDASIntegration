@@ -39,4 +39,16 @@ public class DateTimeUDF {
         Date processedDate = dateFormat.parse(dateString);
         return processedDate.getTime();
     }
+
+    /**
+     * Returns the string date for the day to which the timestamp belongs to.
+     * Ex: for a long timstamp value for 3/4/2016 12:33:22 it would return the string 2016-4-3
+     * @param timestamp timestamp in milliseconds.
+     * @return string value of the date.
+     * @throws ParseException
+     */
+    public String getDateString(Long timestamp) throws ParseException {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        return dateFormat.format(new Date(timestamp));
+    }
 }
