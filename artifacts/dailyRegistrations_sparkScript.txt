@@ -1,0 +1,5 @@
+CREATE TEMPORARY TABLE sp_login USING CarbonAnalytics OPTIONS (tableName "SP_LOGIN_HISTORY");  
+
+CREATE TEMPORARY TABLE dailyRegistrations USING CarbonAnalytics OPTIONS (tableName "Daily_Registrations_Summary", schema "date LONG -i, day STRING -i, operator STRING -i, applicationId STRING -i, count LONG -i", primaryKeys "date, operator, applicationId");  
+
+INSERT OVERWRITE TABLE dailyRegistrations SELECT date, getDateString(date) as day, operator, applicationId, count(*) FROM (SELECT getDateTimestamp(createdDate) as date, operator, applicationId FROM sp_login WHERE isNewUser=true) tempTable GROUP BY date, operator, applicationId;
