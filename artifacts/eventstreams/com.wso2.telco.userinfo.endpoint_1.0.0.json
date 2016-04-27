@@ -1,0 +1,40 @@
+{
+  "name": "com.wso2.telco.userinfo.endpoint",
+  "version": "1.0.0",
+  "nickName": "",
+  "description": "",
+  "payloadData": [
+    {
+      "name": "sourceIP",
+      "type": "STRING"
+    },
+    {
+      "name": "userAgent",
+      "type": "STRING"
+    },
+    {
+      "name": "accessToken",
+      "type": "STRING"
+    },
+    {
+      "name": "serverHost",
+      "type": "STRING"
+    },
+    {
+      "name": "requestURL",
+      "type": "STRING"
+    },
+    {
+      "name": "requestStatus",
+      "type": "STRING"
+    },
+    {
+      "name": "returnedResult",
+      "type": "STRING"
+    },
+    {
+      "name": "_timestamp",
+      "type": "LONG"
+    }
+  ]
+}
