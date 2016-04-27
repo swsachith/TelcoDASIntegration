@@ -1,5 +1,7 @@
-CREATE TEMPORARY TABLE sp_login USING CarbonAnalytics OPTIONS (tableName "SP_LOGIN_HISTORY");  
+ create temporary table auth_endpoint using CarbonAnalytics options (tableName "COM_WSO2_TELCO_AUTHORIZATION_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "auth_endpoint, 2678400");
 
-CREATE TEMPORARY TABLE dailyRegistrations USING CarbonAnalytics OPTIONS (tableName "Daily_Registrations_Summary", schema "date LONG -i, day STRING -i, operator STRING -i, applicationId STRING -i, count LONG -i", primaryKeys "date, operator, applicationId");  
+ create temporary table daily_registrations_summary using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, count LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
 
-INSERT OVERWRITE TABLE dailyRegistrations SELECT date, getDateString(date) as day, operator, applicationId, count(*) FROM (SELECT getDateTimestamp(createdDate) as date, operator, applicationId FROM sp_login WHERE isNewUser=true) tempTable GROUP BY date, operator, applicationId;
+ INSERT INTO TABLE daily_registrations_summary SELECT getDateString(dayTimestamp) as day, operator, appID, count(*), dayTimestamp as _timestamp FROM (SELECT getDateTimestamp(_timestamp) as dayTimestamp, operator, appID FROM auth_endpoint WHERE isNewUser=true) tempTable GROUP BY dayTimestamp, operator, appID;
+
+ INCREMENTAL_TABLE_COMMIT auth_endpoint;
