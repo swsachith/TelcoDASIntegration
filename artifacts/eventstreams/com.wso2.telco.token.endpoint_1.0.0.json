@@ -65,6 +65,14 @@
       "type": "STRING"
     },
     {
+      "name": "statusCode",
+      "type": "STRING"
+    },
+    {
+      "name": "sessionID",
+      "type": "STRING"
+    },
+    {
       "name": "_timestamp",
       "type": "LONG"
     }
