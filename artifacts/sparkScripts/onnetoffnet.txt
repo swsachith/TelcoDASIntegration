@@ -1,0 +1,13 @@
+  create temporary table auth_endpoint_onn_off using CarbonAnalytics options (tableName "COM_WSO2_TELCO_AUTHORIZATION_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "auth_endpoint_onn_off, 86400");
+
+ create temporary table onnetvoffnet using CarbonAnalytics options (tableName "COM_WSO2_TELCO_ONNET_OFFNET_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, onReg LONG -i, offReg LONG -i, onAuth LONG -i, offAuth LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
+
+insert into table onnetvoffnet
+select getDateString(dayTimestamp) as day, operator, appID,
+SUM(IF(isNewUser = true AND isMsisdnHeader = true,1,0)),
+SUM(IF(isNewUser = true AND isMsisdnHeader = false,1,0)),
+SUM(IF(isNewUser = false AND isMsisdnHeader = true AND isAuthCodeIssued = true,1,0)),
+SUM(IF(isNewUser = false AND isMsisdnHeader = false AND isAuthCodeIssued = true,1,0)),
+dayTimestamp as _timestamp FROM (SELECT getDateTimestamp(_timestamp) as dayTimestamp, operator, appID, isNewUser, isMsisdnHeader, isAuthCodeIssued FROM auth_endpoint_onn_off) tempTable GROUP BY dayTimestamp, operator, appID;
+
+INCREMENTAL_TABLE_COMMIT auth_endpoint_onn_off;
