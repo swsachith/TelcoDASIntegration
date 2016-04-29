@@ -1,4 +1,4 @@
- create temporary table auth_endpoint using CarbonAnalytics options (tableName "COM_WSO2_TELCO_AUTHORIZATION_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "auth_endpoint, 2678400");
+ create temporary table auth_endpoint using CarbonAnalytics options (tableName "COM_WSO2_TELCO_AUTHORIZATION_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "auth_endpoint, 86400");
 
  create temporary table daily_registrations_per_app_summary using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
 

@@ -1,0 +1,38 @@
+ create temporary table auth_endpoint_attemptsVlogins using CarbonAnalytics options (tableName "COM_WSO2_TELCO_AUTHORIZATION_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "auth_endpoint_attemptsVlogins, 86400");
+
+ create temporary table token_endpoint_attemptsVlogins using CarbonAnalytics options (tableName "COM_WSO2_TELCO_TOKEN_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "token_endpoint_attemptsVlogins, 86400");
+
+ create temporary table attemptsVlogins using CarbonAnalytics options (tableName "COM_WSO2_TELCO_ATTEMPTS_V_LOGINS", 
+ schema "day STRING -i, operator STRING -i, appID STRING -i, 
+ total_authCount LONG -i, total_tokenCount LONG -i, total_authFailed LONG -i, total_tokenFailed LONG -i,
+ onnet_authCount LONG -i, onnet_tokenCount LONG -i, onnet_authFailed LONG -i, onnet_tokenFailed LONG -i,
+ offnet_authCount LONG -i, offnet_tokenCount LONG -i, offnet_authFailed LONG -i, offnet_tokenFailed LONG -i,
+ _timestamp LONG -i", 
+ primaryKeys "day, operator, appID");
+
+INSERT INTO TABLE attemptsVlogins
+SELECT getDateString(dayTimestamp), operator, appID,
+COUNT(*) as total_authCount,
+SUM(IF(statusCode = 200,1,0)) as total_tokenCount,
+SUM(IF(statusCode IS NULL,1,0)) as total_authFailed,
+SUM(IF(statusCode != 200 ,1,0)) as total_tokenFailed,
+SUM(IF(isMsisdnHeader = true,1,0)) as onnet_authCount,
+SUM(IF(statusCode = 200 AND isMsisdnHeader = true,1,0)) as onnet_tokenCount,
+SUM(IF(statusCode IS NULL AND isMsisdnHeader = true,1,0)) as onnet_authFailed,
+SUM(IF(statusCode != 200 AND isMsisdnHeader = true ,1,0)) as onnet_tokenFailed,
+SUM(IF(isMsisdnHeader = false,1,0)) as offnet_authCount,
+SUM(IF(statusCode = 200 AND isMsisdnHeader = false,1,0)) as offnet_tokenCount,
+SUM(IF(statusCode IS NULL AND isMsisdnHeader = false,1,0)) as offnet_authFailed,
+SUM(IF(statusCode != 200 AND isMsisdnHeader = false ,1,0)) as offnet_tokenFailed,
+dayTimestamp
+FROM 
+ (SELECT getDateTimestamp(ae._timestamp) AS dayTimestamp, operator, appID , isMsisdnHeader, statusCode 
+  FROM auth_endpoint_attemptsVlogins AS ae
+  LEFT JOIN token_endpoint_attemptsVlogins AS te
+  ON ae.sessionID = te.sessionID) 
+ tempTable 
+ GROUP BY dayTimestamp, operator, appID;
+
+ INCREMENTAL_TABLE_COMMIT token_endpoint_attemptsVlogins;
+ 
+ INCREMENTAL_TABLE_COMMIT auth_endpoint_attemptsVlogins;
