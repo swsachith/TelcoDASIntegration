@@ -7,8 +7,7 @@
  total_authCount LONG -i, total_tokenCount LONG -i, total_authFailed LONG -i, total_tokenFailed LONG -i,
  onnet_authCount LONG -i, onnet_tokenCount LONG -i, onnet_authFailed LONG -i, onnet_tokenFailed LONG -i,
  offnet_authCount LONG -i, offnet_tokenCount LONG -i, offnet_authFailed LONG -i, offnet_tokenFailed LONG -i,
- _timestamp LONG -i", 
- primaryKeys "day, operator, appID");
+ _timestamp LONG -i", primaryKeys "day, operator, appID");
 
 INSERT INTO TABLE attemptsVlogins
 SELECT getDateString(dayTimestamp), operator, appID,
@@ -34,5 +33,5 @@ FROM
  GROUP BY dayTimestamp, operator, appID;
 
  INCREMENTAL_TABLE_COMMIT token_endpoint_attemptsVlogins;
- 
+
  INCREMENTAL_TABLE_COMMIT auth_endpoint_attemptsVlogins;
