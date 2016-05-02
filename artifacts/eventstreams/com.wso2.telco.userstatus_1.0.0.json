@@ -17,6 +17,18 @@
       "type": "STRING"
     },
     {
+      "name": "operator",
+      "type": "STRING"
+    },
+    {
+      "name": "appID",
+      "type": "STRING"
+    },
+    {
+      "name": "msisdn",
+      "type": "STRING"
+    },
+    {
       "name": "_timestamp",
       "type": "LONG"
     }
