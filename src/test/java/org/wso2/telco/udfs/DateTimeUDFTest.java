@@ -28,6 +28,7 @@ public class DateTimeUDFTest {
 
     private DateTimeUDF dateTimeUDF;
     private final long TIMESTAMP = 1461737927771L;
+    private final String DATE = "2016-04-27";
 
     @BeforeClass
     public void setup() {
@@ -36,15 +37,22 @@ public class DateTimeUDFTest {
 
     @Test
     public void testGetTimestamp() throws Exception {
-        long expectedResult = 1461695400000L;
+        long expectedResult =  1461695400000L;
         long returnedTimestamp = dateTimeUDF.getDateTimestamp(TIMESTAMP);
         Assert.assertEquals(returnedTimestamp, expectedResult, "Expected timestamp is different!");
     }
 
     @Test
     public void testGetDateString() throws Exception {
-        String expectedDate = "2016-04-27";
         String returnedDateString = dateTimeUDF.getDateString(TIMESTAMP);
-        Assert.assertEquals(returnedDateString, expectedDate, "Expected timestamp string is different!");
+        Assert.assertEquals(returnedDateString, DATE, "Expected timestamp string is different!");
     }
+
+    @Test
+    public void testGetTimeFromDate() throws Exception {
+        long timestampForDate = dateTimeUDF.getTimestampForDate(DATE);
+        Assert.assertEquals(TIMESTAMP, timestampForDate, "returned timestamp for the data is wrong!");
+    }
+
+
 }

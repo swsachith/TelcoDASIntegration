@@ -9,11 +9,6 @@ public class UtilUDFs {
      * @return the alternate value if the object is null, or object otherwise.
      */
     public Object ifnull(Object object, Long value) {
-        if (object == null) {
-            return value;
-        }
-        else {
-            return object;
-        }
+        return (object == null) ? value : object;
     }
 }

@@ -51,4 +51,17 @@ public class DateTimeUDF {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return dateFormat.format(new Date(timestamp));
     }
+
+    /**
+     * Returns the long timestamp for the given date
+     * @param dateString date of the format yyyy-mm-dd
+     * @return timestamp in milliseconds
+     * @throws ParseException
+     */
+    public Long getTimestampForDate(String dateString) throws ParseException {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date processedDate = dateFormat.parse(dateString);
+        return processedDate.getTime();
+    }
+
 }
