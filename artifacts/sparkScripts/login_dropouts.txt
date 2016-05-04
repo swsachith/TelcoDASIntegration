@@ -71,6 +71,3 @@ WHERE sl.msisdn IS NOT NULL AND abs(ul._timestamp - sl._timestamp) < 60000
 ) temptable on temptable.sessionID = ult.sessionID 
 WHERE temptable.sessionID IS NULL
 GROUP BY ult.day, ult.operator, ult.appID, ult._timestamp;
-
-select sessionID from unsuccessfull_logins_temp 
-WHERE sessionID NOT IN ( select sessionID from unsuccessfull_logins_temp )

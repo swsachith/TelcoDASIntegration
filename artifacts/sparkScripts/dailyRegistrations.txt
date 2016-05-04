@@ -1,13 +1,22 @@
- create temporary table auth_endpoint using CarbonAnalytics options (tableName "COM_WSO2_TELCO_AUTHORIZATION_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "auth_endpoint, 86400");
+# -- getting per day summary ----
 
- create temporary table daily_registrations_per_app_summary using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
+ create temporary table auth_endpoint_dailyReg using CarbonAnalytics options (tableName "COM_WSO2_TELCO_AUTHORIZATION_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "auth_endpoint_dailyReg, 86400");
 
- create temporary table daily_registrations_per_operator_summary using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_OPERATOR_SUMMARY", schema "day STRING -i, operator STRING -i, regCount LONG -i, aggregateCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator"); 
+create temporary table daily_registrations_per_app_summary using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
 
- create temporary table daily_registrations_per_operator_summary_temp using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_OPERATOR_SUMMARY", schema "day STRING -i, operator STRING -i, regCount LONG -i, aggregateCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator"); 
-  
- INSERT INTO TABLE daily_registrations_per_app_summary SELECT getDateString(dayTimestamp) as day, operator, appID, count(*), dayTimestamp as _timestamp FROM (SELECT getDateTimestamp(_timestamp) as dayTimestamp, operator, appID FROM auth_endpoint WHERE isNewUser=true) tempTable GROUP BY dayTimestamp, operator, appID;
+INSERT INTO TABLE daily_registrations_per_app_summary SELECT getDateString(dayTimestamp) as day, operator, appID, count(*), dayTimestamp as _timestamp FROM (SELECT getDateTimestamp(_timestamp) as dayTimestamp, operator, appID FROM auth_endpoint_dailyReg WHERE isNewUser=true) tempTable GROUP BY dayTimestamp, operator, appID;
 
- INSERT INTO TABLE daily_registrations_per_operator_summary SELECT getDateString(dayTimestamp) as day, operator, appID, count(regCount), dayTimestamp as _timestamp FROM (SELECT getDateTimestamp(_timestamp) as dayTimestamp, operator, appID FROM auth_endpoint WHERE isNewUser=true) tempTable GROUP BY dayTimestamp, operator, appID;
 
- INCREMENTAL_TABLE_COMMIT auth_endpoint;
+# -- getting per day aggregated value ----
+create temporary table daily_reg_summary_1 using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID", incrementalParams "daily_reg_summary_1, 86400");
+
+create temporary table daily_reg_summary_2 using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID", incrementalParams "daily_reg_summary_2, 172800");
+
+create temporary table subscriberBase using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_SUBSCRIBER_BASE_GROWTH", schema "day STRING -i, operator STRING -i, appID STRING -i, totalCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
+
+INSERT INTO TABLE subscriberBase
+SELECT ds.day, ds.operator, ds.appID, ds.regCount + COALESCE(temp.regCount,0), ds._timestamp from 
+daily_reg_summary_1 as ds
+LEFT JOIN
+(select getDateString(_timestamp + 86400000) as day, operator, appID, regCount from daily_reg_summary_2) temp
+ON ds.day = temp.day AND ds.operator = temp.operator AND ds.appID = temp.appID;

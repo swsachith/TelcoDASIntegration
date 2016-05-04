@@ -51,7 +51,8 @@ public class DateTimeUDFTest {
     @Test
     public void testGetTimeFromDate() throws Exception {
         long timestampForDate = dateTimeUDF.getTimestampForDate(DATE);
-        Assert.assertEquals(TIMESTAMP, timestampForDate, "returned timestamp for the data is wrong!");
+        long expected = 1461695400000L;
+        Assert.assertEquals(timestampForDate, expected, "returned timestamp for the data is wrong!");
     }
 
 
