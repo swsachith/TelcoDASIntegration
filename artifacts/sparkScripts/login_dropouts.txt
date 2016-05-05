@@ -1,12 +1,13 @@
 TODO : consider onnet offnet scenario
 
- create temporary table user_status_loginChannels using CarbonAnalytics options (tableName "COM_WSO2_TELCO_USERSTATUS", schema "_timestamp LONG -i",  incrementalParams "user_status_loginChannels, 86400");
-
-  create temporary table userstatus_final using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_USERSTATUS", schema "sessionID STRING -i, status STRING -i, sourceIP STRING -i,operator STRING -i, appID STRING -i, msisdn STRING -i,_timestamp LONG -i", primaryKeys "sessionID");
-
 # ------ get last knowns location --------------
 
+create temporary table user_status_loginChannels using CarbonAnalytics options (tableName "COM_WSO2_TELCO_USERSTATUS", schema "_timestamp LONG -i",  incrementalParams "user_status_loginChannels, 86400");
+
+create temporary table userstatus_final using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_USERSTATUS", schema "sessionID STRING -i, status STRING -i, sourceIP STRING -i,operator STRING -i, appID STRING -i, msisdn STRING -i,_timestamp LONG -i", primaryKeys "sessionID");
+
 INSERT INTO TABLE userstatus_final SELECT * FROM user_status_loginChannels;
+
 
 # ------ get all successfull logins ------------
 
@@ -37,6 +38,7 @@ on usf.sessionID = ael.sessionID
 WHERE ael.msisdn IS NULL;
 
 # ------ get login channels summary -------------
+
 create temporary table loginChannels using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_LOGIN_CHANNELS", schema "day STRING -i, operator STRING -i, appID STRING -i, ussd_logins LONG -i, sms_logins LONG -i, he_logins LONG -i, total_count LONG -i, _timestamp LONG -i",  incrementalParams "auth_endpoint_login_unsuccess, 86400");
 
 INSERT INTO TABLE loginChannels
@@ -52,7 +54,7 @@ GROUP BY day, operator, appID, _timestamp;
 # ------- filter ussd and sms logins from unsuccessfull ones-------
 create temporary table unsuccessfull_logins_temp using CarbonAnalytics options (tableName "COM_WSO2_TELCO_TEMP_UNSUCECSSFULL_LOGINS", schema "day STRING -i, sessionID STRING -i, operator STRING -i, appID STRING -i, msisdn STRING -i, status STRING -i,_timestamp LONG -i", incrementalParams "unsuccessfull_logins_temp, 86400");
 
-create temporary table dropouts using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_DROPOUTS", schema "day STRING -i, operator STRING -i, appID STRING -i, ussd_droputs LONG -i, sms_dropouts LONG -i, he_dropouts LONG -i, total_count LONG -i, _timestamp LONG -i", incrementalParams "unsuccessfull_logins_temp, 86400");
+create temporary table dropouts using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_DROPOUTS", schema "day STRING -i, operator STRING -i, appID STRING -i, ussd_droputs LONG -i, sms_dropouts LONG -i, he_dropouts LONG -i, total_count LONG -i, _timestamp LONG -i", incrementalParams "dropouts, 86400");
 
 INSERT INTO TABLE dropouts
 SELECT ult.day, ult.operator, ult.appID,

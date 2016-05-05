@@ -10,6 +10,7 @@ INSERT INTO TABLE daily_registrations_per_app_summary SELECT getDateString(dayTi
 # -- getting per day aggregated value ----
 create temporary table daily_reg_summary_1 using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID", incrementalParams "daily_reg_summary_1, 86400");
 
+TODO: Get two windows for this one. 
 create temporary table daily_reg_summary_2 using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID", incrementalParams "daily_reg_summary_2, 172800");
 
 create temporary table subscriberBase using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_SUBSCRIBER_BASE_GROWTH", schema "day STRING -i, operator STRING -i, appID STRING -i, totalCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
