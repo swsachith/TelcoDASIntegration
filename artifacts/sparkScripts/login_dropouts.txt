@@ -56,7 +56,7 @@ create temporary table unsuccessfull_logins_temp using CarbonAnalytics options (
 
 create temporary table unsuccessfull_logins_temp2 using CarbonAnalytics options (tableName "COM_WSO2_TELCO_TEMP_UNSUCECSSFULL_LOGINS", schema "day STRING -i, sessionID STRING -i, operator STRING -i, appID STRING -i, msisdn STRING -i, status STRING -i,_timestamp LONG -i", incrementalParams "unsuccessfull_logins_temp2, 86400");
 
-create temporary table dropouts using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_DROPOUTS", schema "day STRING -i, operator STRING -i, appID STRING -i, ussd_droputs LONG -i, sms_dropouts LONG -i, he_dropouts LONG -i, total_count LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID" incrementalParams "dropouts, 86400");
+create temporary table dropouts using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_DROPOUTS", schema "day STRING -i, operator STRING -i, appID STRING -i, ussd_droputs LONG -i, sms_dropouts LONG -i, he_dropouts LONG -i, total_count LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID", incrementalParams "dropouts, 86400");
 
 create temporary table successfull_logins_temp using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_SUCECSSFULL_LOGINS", schema " _timestamp LONG -i", incrementalParams "successfull_logins_temp, 86400");
 
