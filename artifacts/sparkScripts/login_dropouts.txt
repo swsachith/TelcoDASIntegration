@@ -1,4 +1,3 @@
-TODO : consider onnet offnet scenario
 
 # ------ get last knowns location --------------
 
@@ -6,7 +5,6 @@ create temporary table user_status_loginChannels using CarbonAnalytics options (
 
 create temporary table userstatus_final using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_USERSTATUS", schema "sessionID STRING -i, status STRING -i, sourceIP STRING -i,operator STRING -i, appID STRING -i, msisdn STRING -i,_timestamp LONG -i", primaryKeys "sessionID");
 
-todo: order by timestamp
 INSERT INTO TABLE userstatus_final SELECT * FROM user_status_loginChannels ORDER BY _timestamp ASC;
 
 
@@ -33,7 +31,6 @@ create temporary table userstatus_final_unsuccess using CarbonAnalytics options 
 
 create temporary table auth_endpoint_login_unsuccess using CarbonAnalytics options (tableName "COM_WSO2_TELCO_AUTHORIZATION_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "auth_endpoint_login_unsuccess, 86400");
 
-todo: add isAuthenticated=false here as well
 INSERT INTO TABLE unsuccessfull_logins
 select getDateString(getDateTimestamp(usf._timestamp)), usf.sessionID, usf.operator, usf.appID, usf.msisdn, usf.status, getDateTimestamp(usf._timestamp)
 from userstatus_final_unsuccess as usf LEFT JOIN auth_endpoint_login_unsuccess as ael
@@ -63,7 +60,6 @@ create temporary table dropouts using CarbonAnalytics options (tableName "COM_WS
 
 create temporary table successfull_logins_temp using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_SUCECSSFULL_LOGINS", schema " _timestamp LONG -i", incrementalParams "successfull_logins_temp, 86400");
 
-todo: only do this for sms and ussd states
 INSERT INTO TABLE dropouts
 SELECT ult.day, ult.operator, ult.appID,
 SUM(IF(status = 'USSD',1,0)) as ussd_dropouts,
