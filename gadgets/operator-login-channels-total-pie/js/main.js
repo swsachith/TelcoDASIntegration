@@ -2,18 +2,14 @@ var views = [{
     id: "chart-0",
     schema: [{
         "metadata": {
-            "names": ["Day", "operator", "appID", "Count"],
-            "types": ["ordinal", "ordinal", "ordinal", "linear"]
+            "names": ["Type", "Count"],
+            "types": ["ordinal", "linear"]
         }
     }],
     chartConfig: {
-        x : "Day",
-          charts : [
-            {type: "line", range:"true",  y : "Count", color: "appID"}
-          ],
-          maxLength: -1,
-          width: 500,
-          height: 500
+           charts : [{type: "arc",  x : "Count", color : "Type", mode: "donut"}],
+            width: 400,
+            height: 300
     },
     callbacks: [{
         type: "click",
@@ -30,29 +26,46 @@ var views = [{
     }],
     data: function() {
         var SERVER_URL = "/portal/apis/analytics";
-        var TABLE_NAME = "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY";
+        var TABLE_NAME = "COM_WSO2_TELCO_SUMMARY_OPERATOR_LOGIN_CHANNELS";
         var client = new AnalyticsClient().init(null, null, SERVER_URL);
         var searchParams = {
             tableName : TABLE_NAME,
             searchParams : {
               query : "operator:Airtel",
-              start : 0, 
-              count : 10,
-              sortBy : [{
-                "field" : "_timestamp",
-                "sortType" : "ASC" //can be DESC or ASC
-              }]
+              groupByField:"operator",
+              aggregateFields:[
+              {
+                fields:["he_logins"], 
+                aggregate:"SUM",
+                alias:"he" 
+               },
+               {
+                fields:["ussd_logins"], 
+                aggregate:"SUM",
+                alias:"ussd" 
+               },
+               {
+                fields:["sms_logins"], 
+                aggregate:"SUM",
+                alias:"sms" 
+                }
+              ]
             }
         };
-        client.search(
+        client.searchWithAggregates(
             searchParams,
             function(response) {
                 var results = [];
                 var data = JSON.parse(response.message);
                 data.forEach(function(record, i) {
                     var values = record.values;
-                    var result = [record["day"], values["operator"], values["appID"], values["regCount"]];
-                    results.push(result);
+                    var he = ["HE", values["he"]];
+                    var ussd = ["USSD", values["ussd"]];
+                    var sms = ["SMS", values["sms"]];
+                    results.push(he);
+                    results.push(ussd);
+                    results.push(sms);
+                    console.log(results);
                 });
                 //Call the framework to draw the chart with received data. Note that data should be in VizGrammar ready format
                 wso2gadgets.onDataReady(results);

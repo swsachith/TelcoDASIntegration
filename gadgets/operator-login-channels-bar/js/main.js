@@ -2,18 +2,16 @@ var views = [{
     id: "chart-0",
     schema: [{
         "metadata": {
-            "names": ["Day", "operator", "appID", "Count"],
-            "types": ["ordinal", "ordinal", "ordinal", "linear"]
+            "names": ["Day", "Type", "Count"],
+            "types": ["ordinal", "ordinal", "linear"]
         }
     }],
     chartConfig: {
-        x : "Day",
-          charts : [
-            {type: "line", range:"true",  y : "Count", color: "appID"}
-          ],
-          maxLength: -1,
-          width: 500,
-          height: 500
+            x : "Day",
+            charts : [{type: "bar",  y : "Count", color: "Type", mode:"group"}],
+            maxLength: 100,
+            width: 1000,
+            height: 500
     },
     callbacks: [{
         type: "click",
@@ -30,14 +28,14 @@ var views = [{
     }],
     data: function() {
         var SERVER_URL = "/portal/apis/analytics";
-        var TABLE_NAME = "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY";
+        var TABLE_NAME = "COM_WSO2_TELCO_SUMMARY_OPERATOR_LOGIN_CHANNELS";
         var client = new AnalyticsClient().init(null, null, SERVER_URL);
         var searchParams = {
             tableName : TABLE_NAME,
             searchParams : {
               query : "operator:Airtel",
               start : 0, 
-              count : 10,
+              count : 100,
               sortBy : [{
                 "field" : "_timestamp",
                 "sortType" : "ASC" //can be DESC or ASC
@@ -51,8 +49,13 @@ var views = [{
                 var data = JSON.parse(response.message);
                 data.forEach(function(record, i) {
                     var values = record.values;
-                    var result = [record["day"], values["operator"], values["appID"], values["regCount"]];
-                    results.push(result);
+                    var he = [values["day"], "HE", values["he_logins"]];
+                    var ussd = [values["day"], "USSD", values["ussd_logins"]];
+                    var sms = [values["day"], "SMS", values["sms_logins"]];
+                    results.push(he);
+                    results.push(ussd);
+                    results.push(sms);
+                    console.log(results);
                 });
                 //Call the framework to draw the chart with received data. Note that data should be in VizGrammar ready format
                 wso2gadgets.onDataReady(results);
