@@ -48,8 +48,18 @@ SUM(IF(status = 'SMS',1,0)) as sms_logins,
 SUM(IF(status = 'HE',1,0)) as he_logins,
 count(*) as total_logins,
 _timestamp 
-FROM successfull_logins
+FROM successfull_logins)
 GROUP BY day, operator, appID, _timestamp;
+
+create temporary table loginChannels_per_operator using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_OPERATOR_LOGIN_CHANNELS", schema "day STRING -i, operator STRING -i -f, ussd_logins LONG -i, sms_logins LONG -i, he_logins LONG -i, total_count LONG -i, _timestamp LONG -i", primaryKeys "day, operator");
+
+INSERT INTO TABLE loginChannels_per_operator
+SELECT day, operator,
+SUM(ussd_logins), SUM(sms_logins), SUM(he_logins), 
+SUM(total_count),
+_timestamp 
+FROM loginChannels
+GROUP BY day, operator, _timestamp;
 
 # ------- filter ussd and sms logins from unsuccessfull ones-------
 create temporary table unsuccessfull_logins_temp using CarbonAnalytics options (tableName "COM_WSO2_TELCO_TEMP_UNSUCECSSFULL_LOGINS", schema "day STRING -i, sessionID STRING -i, operator STRING -i, appID STRING -i, msisdn STRING -i, status STRING -i,_timestamp LONG -i", incrementalParams "unsuccessfull_logins_temp, 86400");
