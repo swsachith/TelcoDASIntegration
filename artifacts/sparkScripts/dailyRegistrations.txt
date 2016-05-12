@@ -2,22 +2,36 @@
 
  create temporary table auth_endpoint_dailyReg using CarbonAnalytics options (tableName "COM_WSO2_TELCO_AUTHORIZATION_ENDPOINT", schema "_timestamp LONG -i",  incrementalParams "auth_endpoint_dailyReg, 86400");
 
-create temporary table daily_registrations_per_app_summary using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
+create temporary table daily_registrations_per_app_summary using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_DAILY_REGISTRATIONS", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
 
 INSERT INTO TABLE daily_registrations_per_app_summary SELECT getDateString(dayTimestamp) as day, operator, appID, count(*), dayTimestamp as _timestamp FROM (SELECT getDateTimestamp(_timestamp) as dayTimestamp, operator, appID FROM auth_endpoint_dailyReg WHERE isNewUser=true) tempTable GROUP BY dayTimestamp, operator, appID;
 
+# -- getting daily aggregations
 
-# -- getting per day aggregated value ----
-create temporary table daily_reg_summary_1 using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID", incrementalParams "daily_reg_summary_1, 86400");
+create temporary table daily_registrations_temp using CarbonAnalytics options (tableName "COM_WSO2_TELCO_TEMP_DAILY_REGISTRATIONS", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
 
-TODO: Get two windows for this one. 
-create temporary table daily_reg_summary_2 using CarbonAnalytics options (tableName "COM_WSO2_TELCO_DAILY_REGISTRATIONS_PER_APP_SUMMARY", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID", incrementalParams "daily_reg_summary_2, 172800");
+create temporary table daily_registrations_temp2 using CarbonAnalytics options (tableName "COM_WSO2_TELCO_TEMP_DAILY_REGISTRATIONS", schema "_timestamp LONG -i", primaryKeys "day, operator, appID");
 
-create temporary table subscriberBase using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_SUBSCRIBER_BASE_GROWTH", schema "day STRING -i, operator STRING -i, appID STRING -i, totalCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
+# get a copy of daily registrations
+INSERT INTO TABLE daily_registrations_temp select day,operator, appID, regCount, _timestamp  from daily_registrations_per_app_summary;
 
-INSERT INTO TABLE subscriberBase
-SELECT ds.day, ds.operator, ds.appID, ds.regCount + COALESCE(temp.regCount,0), ds._timestamp from 
-daily_reg_summary_1 as ds
-LEFT JOIN
-(select getDateString(_timestamp + 86400000) as day, operator, appID, regCount from daily_reg_summary_2) temp
-ON ds.day = temp.day AND ds.operator = temp.operator AND ds.appID = temp.appID;
+create temporary table daily_registrations_aggregations using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_DAILY__REGISTRATIONS_AGGREGATIONS", schema "day STRING -i, operator STRING -i, appID STRING -i, totalCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
+
+# get the aggregation value for the value that's smaller than that of the registrations table
+INSERT INTO TABLE daily_registrations_temp2
+SELECT getDateString(31516200000), da.operator, da.appID, da.totalCount, 31516200000 FROM  daily_registrations_aggregations as da
+JOIN (SELECT min(_timestamp) as minTimestamp from daily_registrations_temp) temp
+on da._timestamp = (temp.minTimestamp - 86400000);
+
+#-- do the aggregation for the table
+INSERT INTO TABLE daily_registrations_aggregations
+SELECT dt1.day, dt1.operator, dt1.appID, SUM(dt2.regCount), dt1._timestamp
+FROM  daily_registrations_temp as dt1 INNER JOIN daily_registrations_temp2 as dt2
+ON dt1._timestamp >= dt2._timestamp AND dt1.operator = dt2.operator AND dt1.appID = dt2.appID
+GROUP BY dt1.day, dt1.operator, dt1.appID, dt1._timestamp;
+
+
+# simulation values, delete them from the script
+insert into table daily_registrations_aggregations select "2016-03-31","Airtel","IPL", 20, 1459362600000
+insert into table daily_registrations_aggregations select "2016-03-31","Airtel","TEST", 50, 1459362600000
+
