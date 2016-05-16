@@ -4,9 +4,13 @@
 
 create temporary table daily_registrations_per_app_summary using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_DAILY_REGISTRATIONS", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
 
+create temporary table daily_registrations_operator_summary using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_OPERATOR_DAILY_REGISTRATIONS", schema "day STRING -i, operator STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator");
+
 INSERT INTO TABLE daily_registrations_per_app_summary SELECT getDateString(dayTimestamp) as day, operator, appID, count(*), dayTimestamp as _timestamp FROM (SELECT getDateTimestamp(_timestamp) as dayTimestamp, operator, appID FROM auth_endpoint_dailyReg WHERE isNewUser=true) tempTable GROUP BY dayTimestamp, operator, appID;
 
-# -- getting daily aggregations
+INSERT INTO TABLE daily_registrations_operator_summary SELECT day, operator, SUM(regCount), _timestamp FROM daily_registrations_per_app_summary GROUP BY day, operator, _timestamp;
+
+# -- getting daily aggregations for applications
 
 create temporary table daily_registrations_temp using CarbonAnalytics options (tableName "COM_WSO2_TELCO_TEMP_DAILY_REGISTRATIONS", schema "day STRING -i, operator STRING -i, appID STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator, appID");
 
@@ -31,7 +35,30 @@ ON dt1._timestamp >= dt2._timestamp AND dt1.operator = dt2.operator AND dt1.appI
 GROUP BY dt1.day, dt1.operator, dt1.appID, dt1._timestamp;
 
 
+# -- getting daily aggregations for operators
+
+create temporary table daily_registrations_operator_temp using CarbonAnalytics options (tableName "COM_WSO2_TELCO_TEMP_OPERATOR_DAILY_REGISTRATIONS", schema "day STRING -i, operator STRING -i, regCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator");
+
+create temporary table daily_registrations_operator_temp2 using CarbonAnalytics options (tableName "COM_WSO2_TELCO_TEMP_OPERATOR_DAILY_REGISTRATIONS", schema "_timestamp LONG -i", primaryKeys "day, operator");
+
+create temporary table operator_daily_registrations_aggregations using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_OPERATOR_DAILY__REGISTRATIONS_AGGREGATIONS", schema "day STRING -i, operator STRING -i, totalCount LONG -i, _timestamp LONG -i", primaryKeys "day, operator");
+
+INSERT INTO TABLE daily_registrations_operator_temp select day,operator, regCount, _timestamp  from daily_registrations_operator_summary;
+
+INSERT INTO TABLE daily_registrations_operator_temp2
+SELECT getDateString(31516200000), da.operator, da.totalCount, 31516200000 FROM  operator_daily_registrations_aggregations as da
+JOIN (SELECT min(_timestamp) as minTimestamp from daily_registrations_operator_temp) temp
+on da._timestamp = (temp.minTimestamp - 86400000);
+
+INSERT INTO TABLE operator_daily_registrations_aggregations
+SELECT dt1.day, dt1.operator,SUM(dt2.regCount), dt1._timestamp
+FROM  daily_registrations_operator_temp as dt1 INNER JOIN daily_registrations_operator_temp2 as dt2
+ON dt1._timestamp >= dt2._timestamp AND dt1.operator = dt2.operator
+GROUP BY dt1.day, dt1.operator, dt1._timestamp;
+
 # simulation values, delete them from the script
 insert into table daily_registrations_aggregations select "2016-03-31","Airtel","IPL", 20, 1459362600000
 insert into table daily_registrations_aggregations select "2016-03-31","Airtel","TEST", 50, 1459362600000
 
+insert into table operator_daily_registrations_aggregations select "2016-03-31","Airtel", 33, 1459362600000
+insert into table operator_daily_registrations_aggregations select "2016-03-31","Airtel", 66, 1459362600000
