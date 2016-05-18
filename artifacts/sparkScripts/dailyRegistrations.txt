@@ -60,5 +60,5 @@ GROUP BY dt1.day, dt1.operator, dt1._timestamp;
 insert into table daily_registrations_aggregations select "2016-03-31","Airtel","IPL", 20, 1459362600000
 insert into table daily_registrations_aggregations select "2016-03-31","Airtel","TEST", 50, 1459362600000
 
-insert into table operator_daily_registrations_aggregations select "2016-03-31","Airtel", 33, 1459362600000
-insert into table operator_daily_registrations_aggregations select "2016-03-31","Airtel", 66, 1459362600000
+insert into table operator_daily_registrations_aggregations select "2016-03-31","Airtel", 20, 1459362600000
+insert into table operator_daily_registrations_aggregations select "2016-03-31","IDEA", 50, 1459362600000

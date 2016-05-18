@@ -1,11 +1,13 @@
 
 # ------ get last knowns location --------------
 
-create temporary table user_status_loginChannels using CarbonAnalytics options (tableName "COM_WSO2_TELCO_USERSTATUS", schema "_timestamp LONG -i",  incrementalParams "user_status_loginChannels, 86400");
+create temporary table user_status using CarbonAnalytics options (tableName "COM_WSO2_TELCO_USERSTATUS", schema "_timestamp LONG -i",  incrementalParams "user_status_loginChannels, 86400");
+
+create temporary table user_status_meta using CarbonAnalytics options (tableName "COM_WSO2_TELCO_USERSTATUS_META", schema "_timestamp LONG -i",  incrementalParams "user_status_meta_loginChannels, 86400");
 
 create temporary table userstatus_final using CarbonAnalytics options (tableName "COM_WSO2_TELCO_SUMMARY_USERSTATUS", schema "sessionID STRING -i, status STRING -i, sourceIP STRING -i,operator STRING -i, appID STRING -i, msisdn STRING -i,_timestamp LONG -i", primaryKeys "sessionID");
 
-INSERT INTO TABLE userstatus_final SELECT * FROM user_status_loginChannels ORDER BY _timestamp ASC;
+INSERT INTO TABLE userstatus_final SELECT us.sessionID, us.status, us.sourceIP, meta.operator, meta.appID, meta.msisdn, us._timestamp FROM user_status as us LEFT JOIN user_status_meta as meta ON us.sessionID = meta.sessionID ORDER BY _timestamp ASC;
 
 
 # ------ get all successfull logins ------------
