@@ -48,7 +48,7 @@ public class UtilTest {
 
     @Test
     public void testGetAuthenticatorForSetOfValues() {
-        String value = "[GSMA,USSD,MSISDN]";
+        String value = "[GSMA,USSD, MSISDN]";
         String result = utils.getAuthenticator(value);
         Assert.assertEquals("MSISDN", result, "Returned last value is not the expected!");
     }

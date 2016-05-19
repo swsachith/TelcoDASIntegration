@@ -33,6 +33,6 @@ public class Utils {
             String[] results = result.split(",");
             result = results[results.length - 1];
         }
-        return result;
+        return result.trim();
     }
 }
