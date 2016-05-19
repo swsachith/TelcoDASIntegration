@@ -33,8 +33,15 @@ public class UtilTest {
     }
 
     @Test
-    public void testGetAuthenticatorForNullValue() {
+    public void testGetAuthenticatorForEmptyBrackets() {
         String value = "[]";
+        String result = utils.getAuthenticator(value);
+        Assert.assertEquals("", result, "Empty brackets returned value is wrong!");
+    }
+
+    @Test
+    public void testGetAuthenticatorForNullValue() {
+        String value = "";
         String result = utils.getAuthenticator(value);
         Assert.assertEquals("", result, "Empty brackets returned value is wrong!");
     }
