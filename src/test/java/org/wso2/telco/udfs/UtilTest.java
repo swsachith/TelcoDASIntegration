@@ -36,20 +36,56 @@ public class UtilTest {
     public void testGetAuthenticatorForEmptyBrackets() {
         String value = "[]";
         String result = utils.getAuthenticator(value);
-        Assert.assertEquals("", result, "Empty brackets returned value is wrong!");
+        Assert.assertEquals(result , "" , "Empty brackets returned value is wrong!");
     }
 
     @Test
     public void testGetAuthenticatorForNullValue() {
         String value = "";
         String result = utils.getAuthenticator(value);
-        Assert.assertEquals("", result, "Empty brackets returned value is wrong!");
+        Assert.assertEquals(result , "" , "Empty brackets returned value is wrong!");
     }
 
     @Test
     public void testGetAuthenticatorForSetOfValues() {
         String value = "[GSMA,USSD, MSISDN]";
         String result = utils.getAuthenticator(value);
-        Assert.assertEquals("MSISDN", result, "Returned last value is not the expected!");
+        Assert.assertEquals(result, "MSISDN", "Returned last value is not the expected!");
+    }
+
+    @Test
+    public void testGetLoginTypeForHE() {
+        String status = "HE_AUTH_SUCCES";
+        Boolean msisdnHeader = true;
+        int acrValue = 2;
+        String result = utils.getLoginType(status, msisdnHeader, acrValue);
+        Assert.assertEquals(result, "HE", "Did not return the type as HE");
+    }
+
+    @Test
+    public void testGetLoginTypeForUSSD() {
+        String status = "LOGIN_SUCCES";
+        Boolean msisdnHeader = false;
+        int acrValue = 2;
+        String result = utils.getLoginType(status, msisdnHeader, acrValue);
+        Assert.assertEquals(result, "USSD", "Did not return the type as USSD");
+    }
+
+    @Test
+    public void testGetLoginTypeForPIN() {
+        String status = "LOGIN_SUCCES";
+        Boolean msisdnHeader = false;
+        int acrValue = 3;
+        String result = utils.getLoginType(status, msisdnHeader, acrValue);
+        Assert.assertEquals(result, "PIN", "Did not return the type as PIN");
+    }
+
+    @Test
+    public void testGetLoginTypeForUnIdentified() {
+        String status = "LOGIN_SUCCES";
+        Boolean msisdnHeader = true;
+        int acrValue = 2;
+        String result = utils.getLoginType(status, msisdnHeader, acrValue);
+        Assert.assertEquals(result, "UNIDENTIFIED_LOGIN", "Did not return the type as UNIDENTIFIED_LOGIN");
     }
 }

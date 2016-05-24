@@ -22,6 +22,13 @@ package org.wso2.telco.udfs;
  */
 public class Utils {
 
+    private final String UNIDENTIFIED_LOGIN = "UNIDENTIFIED_LOGIN";
+    private final String HE_LOGIN = "HE_AUTH_SUCCES";
+    private final String DEFAULT_LOGIN_SUCCESS = "LOGIN_SUCCES";
+    private final String HE_LOGIN_TYPE = "HE";
+    private final String USSD_LOGIN_TYPE = "USSD";
+    private final String USSD_PIN_LOGIN_TYPE = "PIN";
+
     /**
      * Returns the Authenticator method when the array of authenticators are given.
      * @param authenticatorMethods authenticator methods in the form [MSISDN, USSD]
@@ -34,5 +41,28 @@ public class Utils {
             result = results[results.length - 1];
         }
         return result.trim();
+    }
+
+    /**
+     * Returns the login type for the given scenario.
+     * @param status final login status for the session.
+     * @param msisdnHeader if the msisdn header is present or not.
+     * @param acrValue the acr value for the session.
+     * @return HE for HE logins, USSD for USSD logins, PIN for USSD PIN logins.
+     */
+    public String getLoginType(String status, boolean msisdnHeader, int acrValue) {
+        if (status == null || !status.isEmpty()) {
+            status = status.toUpperCase().trim();
+            if (status.equals(HE_LOGIN) && msisdnHeader) {
+                return HE_LOGIN_TYPE;
+            } else if (status.equals(DEFAULT_LOGIN_SUCCESS) && !msisdnHeader) {
+                if (acrValue == 2) {
+                    return USSD_LOGIN_TYPE;
+                } else if (acrValue == 3) {
+                    return USSD_PIN_LOGIN_TYPE;
+                }
+            }
+        }
+        return UNIDENTIFIED_LOGIN;
     }
 }
