@@ -1,0 +1,20 @@
+{
+  "name": "com.wso2telco.summary.realtime.logins.per.minute",
+  "version": "1.0.0",
+  "nickName": "",
+  "description": "",
+  "payloadData": [
+    {
+      "name": "operator",
+      "type": "STRING"
+    },
+    {
+      "name": "appID",
+      "type": "STRING"
+    },
+    {
+      "name": "count",
+      "type": "LONG"
+    }
+  ]
+}

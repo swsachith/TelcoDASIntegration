@@ -1,0 +1,12 @@
+/* Enter a unique ExecutionPlan */
+@Plan:name('LoginsPerMinute')
+
+@Import('com.wso2.telco.authorization.endpoint:1.0.0')
+define stream auth_endpoint (requestType string, appID string, isAuthenticated bool, authenticatorMethods string, authenticatorEndTime long, authenticatorStartTime long, sessionID string, isNewUser bool, operator string, userAgent string, msisdn string, internalCustomerReference string, serverHost string, requestURL string, httpMethod string, urlParams string, requestStatus string, returnedError string, transactionID string, consentTimetamp long, consentState string, consentType string, isAuthCodeIssued bool, state string, nonce string, scope string, acrValue int, isMsisdnHeader bool, ipHeader string, loginHint string, comment string, _timestamp long);
+
+@Export('com.wso2telco.summary.realtime.logins.per.minute:1.0.0')
+define stream outputStream (operator string, appID string, count long);
+
+from auth_endpoint[isAuthenticated == true]#window.time(1 min)
+select operator, appID, count() as count
+insert current events into outputStream
